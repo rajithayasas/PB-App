@@ -1,0 +1,27 @@
+.Grid {
+    width: 600px;
+    display: flex;
+    justify-content: start;
+    flex-wrap: wrap;
+}
+
+.GridImage {
+    flex-grow: 1;
+    border: 1px solid white;
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+    background-size: cover;
+    background-position: 50%;
+}
+
+.GridItemWrapper {
+    flex: 0 0 33.3%;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+  
+    box-sizing: border-box;
+}

@@ -85,6 +85,25 @@ const Home = () => {
   const onMoveItem = (sourceId, destinationId, list) => {
     const updatedItems = MoveItem(sourceId, destinationId, list);
     setPreviewPhotoList([...updatedItems]);
+    setHideDeleteButton(true);
+
+    // enable add to album button
+    const deafaultImages = enableAddButton(updatedItems);
+    if (deafaultImages) {
+      setHideAddButton(false);
+    } else {
+      setHideAddButton(true);
+    }
+  };
+
+  // enable add to album button
+  const enableAddButton = (arry = []) => {
+    const deafaultImages = arry.filter((res) => res.default);
+    if (deafaultImages.length === 0) {
+      return true;
+    }
+
+    return false;
   };
 
   // Handle on click Add to Album Event
@@ -202,6 +221,19 @@ const Home = () => {
     let defaultVal = false;
     let previewPhotoListTemp = previewPhotoList;
 
+    const foundDuplicate = checkForDuplicatePhotos(item);
+    if (foundDuplicate) {
+      // Hide After 3 Secounds
+      NotificationManager.warning(
+        "You cannot add duplicate photos to the album",
+        "Info",
+        3000,
+        () => {}
+      );
+
+      return;
+    }
+
     // replace deafult tiles with selected images
     previewPhotoListTemp = previewPhotoListTemp.map((res) => {
       if (!defaultVal && res.default === true) {
@@ -216,9 +248,11 @@ const Home = () => {
     setPreviewPhotoList([...previewPhotoListTemp]);
 
     // enable add to album button
-    const deafaultImages = previewPhotoListTemp.filter((res) => res.default);
-    if (deafaultImages.length === 0) {
+    const deafaultImages = enableAddButton(previewPhotoListTemp);
+    if (deafaultImages) {
       setHideAddButton(false);
+    } else {
+      setHideAddButton(true);
     }
 
     if (!hideAddButton) {
@@ -230,6 +264,15 @@ const Home = () => {
         () => {}
       );
     }
+  };
+
+  // check duplicate photos
+  const checkForDuplicatePhotos = (item) => {
+    const found = previewPhotoList.filter((res) => item._id === res._id);
+
+    if (found.length === 0) return false;
+
+    return true;
   };
 
   // Remove item from the album
@@ -271,8 +314,8 @@ const Home = () => {
           <Grid>
             {previewPhotoList.map((item, index) => (
               <DragItem
-                key={item.index}
-                id={item.index}
+                key={item._id}
+                id={item._id}
                 onMoveItem={(sourceId, destinationId) =>
                   onMoveItem(sourceId, destinationId, previewPhotoList)
                 }

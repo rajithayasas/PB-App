@@ -1,0 +1,25 @@
+.dd-feature-img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+.dd-grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    justify-content: center;
+  }
+
+.dd-grid-item {
+    width: 200px;
+    height: 200px;
+    padding: 1px;
+}
+
+.dd-close-icon {
+    width: 25px;
+    height: 25px;
+    margin-top: 4px;
+    position: absolute;
+    margin-left: -26px;
+}

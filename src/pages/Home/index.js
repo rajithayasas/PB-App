@@ -19,16 +19,15 @@ import {
 } from "../../api/urls";
 
 // component imports
-import DragItem from "../../component/Grid/DragItem";
 import { Button } from "../../component/Button";
-import { Grid, GridImage, GridItem } from "../../component/Grid/Grid";
-
-// helpers
-import MoveItem from "../../helpers/move-item-hepler";
 
 // default Ggid view
 import EmptyGrid from "./emptyGrid";
 import EmptyImage from "../../assets/images/gray-box.png";
+
+// Drag And Drop Component
+import DndGrid from "../../component/DndGrid";
+import Grid from "../../component/Grid";
 
 // home styles
 import "./home.css";
@@ -38,7 +37,7 @@ const USER_ID = 123; // This is use to mock the login user
 const Home = () => {
   // Local State
   const [previewPhotoList, setPreviewPhotoList] = useState(EmptyGrid);
-  const [allPhotoList, setAllPhotoList] = useState([]);
+  const [allPhotoList, setAllPhotoList] = useState(EmptyGrid);
   const [albumId, setAlbumId] = useState(null);
   const [hideAddButton, setHideAddButton] = useState(true);
   const [hideDeleteButton, setHideDeleteButton] = useState(true);
@@ -80,20 +79,6 @@ const Home = () => {
     if (res.error) return;
 
     setAllPhotoList(res.data.entries);
-  };
-
-  const onMoveItem = (sourceId, destinationId, list) => {
-    const updatedItems = MoveItem(sourceId, destinationId, list);
-    setPreviewPhotoList([...updatedItems]);
-    setHideDeleteButton(true);
-
-    // enable add to album button
-    const deafaultImages = enableAddButton(updatedItems);
-    if (deafaultImages) {
-      setHideAddButton(false);
-    } else {
-      setHideAddButton(true);
-    }
   };
 
   // enable add to album button
@@ -290,86 +275,75 @@ const Home = () => {
     setHideDeleteButton(true);
   };
 
+  // On Drop - Change
+  const onChangeImages = (imgs) => {
+    // Set new order
+    setPreviewPhotoList([...imgs]);
+
+    // Hide delete button
+    setHideDeleteButton(true);
+
+    // enable add to album button
+    const deafaultImages = enableAddButton(imgs);
+    if (deafaultImages) {
+      setHideAddButton(false);
+    } else {
+      setHideAddButton(true);
+    }
+  };
+
   return (
-    <>
-      <div className="image-container">
-        {/* All Photos View */}
-        <div className="all-image-view">
-          <Grid>
-            {allPhotoList.map((item, index) => (
-              <DragItem key={item._id} id={item._id} onMoveItem={() => {}}>
-                <GridItem>
-                  <GridImage
-                    src={item.picture}
-                    onClick={() => onclickImagetoAdd(item)}
-                  ></GridImage>
-                </GridItem>
-              </DragItem>
-            ))}
-          </Grid>
-        </div>
+    <div className="image-container">
+      {/* All Photos View */}
+      <div className="all-image-view">
+        <Grid
+          featureImages={allPhotoList}
+          onClickImage={(item) => onclickImagetoAdd(item)}
+        ></Grid>
+        <p>Please scroll above section for view more</p>
+      </div>
 
-        {/* Album View  */}
-        <div className="album-view">
-          <Grid>
-            {previewPhotoList.map((item, index) => (
-              <DragItem
-                key={item._id}
-                id={item._id}
-                onMoveItem={(sourceId, destinationId) =>
-                  onMoveItem(sourceId, destinationId, previewPhotoList)
-                }
-              >
-                <GridItem>
-                  <GridImage src={item.picture}>
-                    {item.default !== true && (
-                      <p
-                        className="remove-item"
-                        onClick={() => onClickRemoveItem(index)}
-                      >
-                        X
-                      </p>
-                    )}
-                  </GridImage>
-                </GridItem>
-              </DragItem>
-            ))}
-          </Grid>
+      {/* Album View  */}
+      <div className="album-view">
+        <DndGrid
+          featureImages={previewPhotoList}
+          onClickRemoveItem={(index) => onClickRemoveItem(index)}
+          onChangeFeatureImages={(imgs) => onChangeImages(imgs)}
+        ></DndGrid>
 
-          <div className="action-button-container">
-            {/* Add to Button Visibility  */}
-            {hideAddButton ? (
-              <Button size="large" label="Add to Album"></Button>
-            ) : (
+        <div className="action-button-container">
+          {/* Add to Button Visibility  */}
+          {hideAddButton ? (
+            <Button size="large" label="Add to Album"></Button>
+          ) : (
+            <Button
+              size="large"
+              label="Add to Album"
+              primary={true}
+              onClickButton={() => onClickAddToAlbum()}
+            ></Button>
+          )}
+
+          {/* Delete Button Visibility  */}
+          {albumId && !hideDeleteButton ? (
+            <>
               <Button
                 size="large"
-                label="Add to Album"
+                label="Delete Album"
                 primary={true}
-                onClickButton={() => onClickAddToAlbum()}
+                backgroundColor="red"
+                onClickButton={() => onClickDeleteAlbum()}
               ></Button>
-            )}
-
-            {/* Delete Button Visibility  */}
-            {albumId && !hideDeleteButton ? (
-              <>
-                <Button
-                  size="large"
-                  label="Delete Album"
-                  primary={true}
-                  backgroundColor="red"
-                  onClickButton={() => onClickDeleteAlbum()}
-                ></Button>
-              </>
-            ) : (
-              <>
-                <Button size="large" label="Delete Album"></Button>
-              </>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              <Button size="large" label="Delete Album"></Button>
+            </>
+          )}
         </div>
-        <NotificationContainer />
       </div>
-    </>
+      <NotificationContainer />
+    </div>
   );
 };
 
